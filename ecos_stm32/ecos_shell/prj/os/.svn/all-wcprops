@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/gxcoreapi/!svn/ver/1436/trunk/ecos_shell/prj/os
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/gxcoreapi/!svn/ver/1418/trunk/ecos_shell/prj/os/Makefile
+END
+.release
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/gxcoreapi/!svn/ver/1403/trunk/ecos_shell/prj/os/.release
+END

@@ -1,0 +1,432 @@
+#include "rtc.h"
+#include <cyg/kernel/kapi.h>
+unsigned int RTC_BASE_ADDRESS;
+/****************************************************************************
+*****************************************************************************/
+unsigned char bcd_to_decimal(unsigned char bcd)
+{
+	return ((bcd >> 4)*10 + (bcd & 0x0F));
+}
+
+void gxos_get_rtc_time_ms(unsigned int *cur_time)
+{
+	RtcDateTime_t  DateTime;
+	
+	rtc_time_read(&DateTime);
+
+	*cur_time =  (bcd_to_decimal(DateTime.TmHour) * 60 * 60 * 1000) 
+					+ (bcd_to_decimal(DateTime.TmMin) * 60 * 1000)
+					+ (bcd_to_decimal(DateTime.TmSec) * 1000) 
+					+ DateTime.TmMs;
+
+	return;
+}
+
+void gxos_get_rtc_time_us(unsigned int *cur_time)
+{
+	RtcDateTime_t  DateTime;
+	
+	rtc_time_read(&DateTime);
+
+	*cur_time = (bcd_to_decimal(DateTime.TmMin) * 60 * 1000 * 1000) + (bcd_to_decimal(DateTime.TmSec) * 1000 * 1000) 
+					+ (DateTime.TmMs*1000) + DateTime.TmUs;
+
+	return ;
+}
+
+/****************************************************************************
+*****************************************************************************/
+void rtc_init(RTC_ClockFrequency_t Clock,
+			  BOOL CtrIntEnable,
+			  BOOL Alarm1IntEnable,
+			  BOOL Alarm2IntEnable)
+{	
+	RTC_ClockFrequency_t Clock1;
+	unsigned int chip_type=gx_chip_probe();
+	switch(chip_type)
+	{
+		case 0x3110:
+		case 0x6109:
+		case 0x6202:	
+			Clock1=RTC_CLOCK_27MHZ;
+			RTC_BASE_ADDRESS=0xd0409000;	//gx3110 映射后的虚地址
+			break;
+		case 0x6107:
+			Clock1=RTC_CLOCK_4MHZ;
+			RTC_BASE_ADDRESS=0xe0000000; 	//gx6107 实地址
+			break;
+		default:
+		        Clock1=RTC_CLOCK_27MHZ;
+			break;
+			
+	}
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x0c) = Clock1;
+
+	// 中断使能
+	if (CtrIntEnable == TRUE)
+	{
+		*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x04)|= (1<<0);
+	}
+	if(Alarm1IntEnable == TRUE)
+	{
+		*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x04) |= (1<<1);
+	}
+	if(Alarm2IntEnable == TRUE)
+	{
+		*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x04) |= (1<<2);
+	}
+
+	//中断号0
+	//*(volatile unsigned int*)0x00800044 &= ~(0x0f << 5);
+	//*(volatile unsigned int*)0x00800044 |= (15 << 5);
+	//*(volatile unsigned int*)0x00800010 = 0xFFFFFFFF;
+}
+
+void rtc_time_start(void)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) |= (1<<0);
+}
+
+void rtc_time_stop(void)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) &= ~(1<<0);
+}
+
+void rtc_time_write(RtcDateTime_t *DateTime)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x64) = ((DateTime->TmUs) / 10);
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x68) = DateTime->TmMs;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x6c) = DateTime->TmSec;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x70) = DateTime->TmMin;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x74) = DateTime->TmHour;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x78) = DateTime->TmWeek;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x7c) = DateTime->TmDay;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x80) = DateTime->TmMonth;
+    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x84) = DateTime->TmYear;
+}
+
+void rtc_time_read(RtcDateTime_t *DateTime)
+{
+	 DateTime->TmUs 	   = (*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x64)) * 10; 
+     DateTime->TmMs        = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x68)       ;
+     DateTime->TmSec       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x6c)       ;
+     DateTime->TmMin       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x70)       ;
+     DateTime->TmHour      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x74)       ;
+     DateTime->TmWeek      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x78)       ;
+     DateTime->TmDay       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x7c)       ;
+     DateTime->TmMonth     = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x80)       ;
+     DateTime->TmYear      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x84)       ;
+
+}
+
+void rtc_clock_start(void)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) |= (1<<1);
+}
+
+void rtc_clock_stop(void)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) &= ~(1<<1);
+}
+
+void rtc_clock_set(unsigned int time_duration)
+{
+	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x10) = (time_duration / 10);	
+}
+
+void rtc_clock_get(unsigned int *time_duration)
+{
+	 *time_duration = (*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x10)) * 10;	
+}
+
+void rtc_alarm_start(RTC_Alarm_t Alarm)
+{
+    switch(Alarm)
+    {
+        case GXRTC_ALARM_ONE:
+            *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) |= (1<<2);
+            break;
+        case GXRTC_ALARM_TWO:
+            *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) |= (1<<3);
+            break;
+        default:
+            return;
+    }
+}
+
+void rtc_alarm_stop(RTC_Alarm_t Alarm)
+{
+    switch(Alarm)
+    {
+        case GXRTC_ALARM_ONE:
+			*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) &= ~(1<<2);
+            break;
+        case GXRTC_ALARM_TWO:
+			*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x00) &= ~(1<<3);
+            break;
+        default:
+            return;
+    }
+}
+
+void rtc_alarm_mask(RTC_Alarm_t Alarm,GXRTC_AlarmMask_t *Mask)
+{
+    switch(Alarm)
+    {
+        case GXRTC_ALARM_ONE:
+			if(Mask->AlarmMaskYear == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<8);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<8);
+			}
+			if(Mask->AlarmMaskMonth == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<7);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<7);
+			}
+			if(Mask->AlarmMaskDay == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<6);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<6);
+			}
+			if(Mask->AlarmMaskWeek == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<5);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<5);
+			}
+			if(Mask->AlarmMaskHour == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<4);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<4);
+			}
+			if(Mask->AlarmMaskMin == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<3);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<3);
+			}
+			if(Mask->AlarmMaskSec == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<2);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<2);
+			}
+			if(Mask->AlarmMaskMs == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<1);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<1);
+			}
+			if(Mask->AlarmMaskUs == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) |= (1<<0);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x14) &= ~(1<<0);
+			}
+            break;
+        case GXRTC_ALARM_TWO:
+			if(Mask->AlarmMaskYear == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<8);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<8);
+			}
+			if(Mask->AlarmMaskMonth == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<7);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<7);
+			}
+			if(Mask->AlarmMaskDay == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<6);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<6);
+			}
+			if(Mask->AlarmMaskWeek == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<5);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<5);
+			}
+			if(Mask->AlarmMaskHour == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<4);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<4);
+			}
+			if(Mask->AlarmMaskMin == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<3);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<3);
+			}
+			if(Mask->AlarmMaskSec == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<2);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<2);
+			}
+			if(Mask->AlarmMaskMs == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<1);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<1);
+			}
+			if(Mask->AlarmMaskUs == TRUE)
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) |= (1<<0);
+			}
+			else
+			{
+            	*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x3c) &= ~(1<<0);
+			}
+            break;
+        default:
+            return;
+    }
+}
+
+void rtc_alarm_write(RTC_Alarm_t Alarm,RtcDateTime_t *DateTime)
+{
+    switch(Alarm)
+    {
+        case GXRTC_ALARM_ONE:
+			*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x18) = ((DateTime->TmUs) / 10);
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x1c) = DateTime->TmMs;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x20) = DateTime->TmSec;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x24) = DateTime->TmMin;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x28) = DateTime->TmHour;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x2c) = DateTime->TmWeek;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x30) = DateTime->TmDay;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x34) = DateTime->TmMonth;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x38) = DateTime->TmYear;
+            break;
+        case GXRTC_ALARM_TWO:
+			*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x40) = ((DateTime->TmUs) / 10);
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x44) = DateTime->TmMs;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x48) = DateTime->TmSec;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x4c) = DateTime->TmMin;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x50) = DateTime->TmHour;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x54) = DateTime->TmWeek;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x58) = DateTime->TmDay;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x5c) = DateTime->TmMonth;
+		    *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x60) = DateTime->TmYear;
+            break;
+        default:
+            return;
+    }
+
+}
+
+void rtc_alarm_read(RTC_Alarm_t Alarm,RtcDateTime_t *DateTime)
+{
+    switch(Alarm)
+    {
+        case GXRTC_ALARM_ONE:
+			 DateTime->TmUs 	   = (*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x18)) * 10; 
+		     DateTime->TmMs        = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x1c)       ;
+		     DateTime->TmSec       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x20)       ;
+		     DateTime->TmMin       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x24)       ;
+		     DateTime->TmHour      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x28)       ;
+		     DateTime->TmWeek      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x2c)       ;
+		     DateTime->TmDay       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x30)       ;
+		     DateTime->TmMonth     = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x34)      ;
+		     DateTime->TmYear      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x38)       ;
+            break;
+        case GXRTC_ALARM_TWO:
+			 DateTime->TmUs 	   = (*(volatile unsigned int*)(RTC_BASE_ADDRESS+0x40)) * 10; 
+		     DateTime->TmMs        = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x44)       ;
+		     DateTime->TmSec       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x48)       ;
+		     DateTime->TmMin       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x4c)       ;
+		     DateTime->TmHour      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x50)       ;
+		     DateTime->TmWeek      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x54)       ;
+		     DateTime->TmDay       = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x58)       ;
+		     DateTime->TmMonth     = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x5c)       ;
+		     DateTime->TmYear      = *(volatile unsigned int*)(RTC_BASE_ADDRESS+0x60)       ;
+            break;
+        default:
+            return;
+    }
+
+}
+
+
+unsigned int cur_time_start=0,cur_time_finish=0;
+static int rtc_inited=0;
+void RTC_Init(void)
+{
+	if( !rtc_inited )
+	{
+	//unsigned int time_token;
+	RtcDateTime_t DateTime={0,0};
+	rtc_init(RTC_CLOCK_27MHZ,1,0,0);
+	rtc_time_stop();
+	rtc_time_write(&DateTime);
+	rtc_inited=1;
+	}
+}	
+	
+void StartTimer(void)
+{
+/*
+	start_rtc();
+*/
+
+	rtc_time_start();//start rtc timer
+	gxos_get_rtc_time_ms(&cur_time_start);  //get RTC time
+}
+
+unsigned int GetTimerMSec(void)
+{
+
+/*
+	stop_rtc();
+        time_token = rRTC_SEC * 1000000 + rRTC_MS * 1000 + rRTC_US*10;
+        time_token /= 100000;	
+*/
+	gxos_get_rtc_time_ms(&cur_time_finish);  //get RTC time
+	        
+	return (cur_time_finish-cur_time_start);
+
+}
+

@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include
+END
+upnpreplyparse.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/upnpreplyparse.h
+END
+minissdpc.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/minissdpc.h
+END
+igd_desc_parse.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/igd_desc_parse.h
+END
+connecthostport.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/connecthostport.h
+END
+miniupnpc.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/miniupnpc.h
+END
+upnpcommands.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/upnpcommands.h
+END
+net_cmd.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/net_cmd.h
+END
+miniupnpcstrings.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/miniupnpcstrings.h
+END
+codelength.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/codelength.h
+END
+minixml.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/minixml.h
+END
+upnperrors.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/upnperrors.h
+END
+minisoap.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/minisoap.h
+END
+declspec.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/declspec.h
+END
+miniwget.h
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/miniwget.h
+END
+gxcore_ecos_module.hxx
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/gxcoreapi/!svn/ver/1770/trunk/ecos_shell/prj/net/include/gxcore_ecos_module.hxx
+END

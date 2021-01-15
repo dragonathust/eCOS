@@ -1,0 +1,1 @@
+ecosconfig --config=stm32f103.ecc tree

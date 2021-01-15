@@ -1,0 +1,3 @@
+#/bin/sh
+# Check prj/*/.release, and only make .release one to build/shell.elf
+make -s

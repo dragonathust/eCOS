@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/gxcoreapi/!svn/ver/1395/trunk/ecos_shell/core/source
+END
+shell_thread.c
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/gxcoreapi/!svn/ver/1395/trunk/ecos_shell/core/source/shell_thread.c
+END
+thread_cleanup.c
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/gxcoreapi/!svn/ver/1388/trunk/ecos_shell/core/source/thread_cleanup.c
+END
+shell_err.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/gxcoreapi/!svn/ver/1379/trunk/ecos_shell/core/source/shell_err.c
+END
+init.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/gxcoreapi/!svn/ver/1395/trunk/ecos_shell/core/source/init.c
+END
+builtin_commands.c
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/gxcoreapi/!svn/ver/1395/trunk/ecos_shell/core/source/builtin_commands.c
+END
+shelltask.c
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/gxcoreapi/!svn/ver/1395/trunk/ecos_shell/core/source/shelltask.c
+END

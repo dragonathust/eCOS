@@ -1,0 +1,3 @@
+rm -rf stm32f103_build/
+rm -rf stm32f103_install/
+rm -rf stm32f103_mlt/

@@ -1,0 +1,3 @@
+#/bin/sh
+# Don't check prj/*/.release, and make all to build/shell.elf
+make -s dirty

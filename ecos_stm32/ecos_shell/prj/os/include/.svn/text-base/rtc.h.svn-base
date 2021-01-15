@@ -1,0 +1,102 @@
+/* Define to prevent recursive inclusion */
+#ifndef __RTC_H__
+#define __RTC_H__
+/* Cooperation with C and C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef BOOL
+typedef unsigned int BOOL;
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#define TRUE  1
+#endif
+extern unsigned int RTC_BASE_ADDRESS;
+//#define RTC_BASE_ADDRESS 0x00409000   //gx3110实地址
+//#define RTC_BASE_ADDRESS   0xd0409000	//gx3110 映射后的虚地址
+//#define RTC_BASE_ADDRESS 0xe0000000 	//gx6107 实地址
+typedef enum RTC_ClockFrequency_e
+{
+	RTC_CLOCK_4MHZ			= 40,
+	RTC_CLOCK_8MHZ  		= 60,
+	RTC_CLOCK_13_5MHZ  		= 135,
+	RTC_CLOCK_16MHZ 		= 160,
+	RTC_CLOCK_27MHZ  		= 270
+}RTC_ClockFrequency_t;
+
+typedef enum RTC_Alarm_e
+{
+	GXRTC_ALARM_ONE,
+	GXRTC_ALARM_TWO
+}RTC_Alarm_t;
+
+typedef struct RtcDateTime_s
+{
+	unsigned int		TmYear;				// 年,BCD码
+	unsigned short		TmMonth;			// 月,BCD码
+	unsigned short		TmDay;				// 日,BCD码
+	unsigned short		TmWeek;				// 周,BCD码
+	unsigned short		TmHour;				// 时,BCD码
+	unsigned short		TmMin;				// 分,BCD码
+	unsigned short		TmSec;				// 秒,BCD码
+	unsigned short		TmMs;				// 毫秒,DEC值
+	unsigned short		TmUs;				// 微秒,DEC值
+}RtcDateTime_t;
+
+typedef struct GXRTC_AlarmMask_s
+{
+	BOOL 		AlarmMaskYear;
+	BOOL		AlarmMaskMonth;
+	BOOL		AlarmMaskDay;
+	BOOL		AlarmMaskWeek;
+	BOOL		AlarmMaskHour;
+	BOOL		AlarmMaskMin;
+	BOOL		AlarmMaskSec;
+	BOOL		AlarmMaskMs;
+	BOOL		AlarmMaskUs;
+}GXRTC_AlarmMask_t;
+
+extern unsigned char bcd_to_decimal(unsigned char bcd);
+
+extern void gxos_get_rtc_time_ms(unsigned int *cur_time);
+
+extern void gxos_get_rtc_time_us(unsigned int *cur_time);
+
+extern void rtc_init(RTC_ClockFrequency_t Clock,
+			  BOOL CtrIntEnable,
+			  BOOL Alarm1IntEnable,
+			  BOOL Alarm2IntEnable);
+
+extern void rtc_clock_start(void);
+
+extern void rtc_clock_stop(void);
+
+extern void rtc_clock_set(unsigned int time_duration);
+
+extern void rtc_clock_get(unsigned int *time_duration);
+
+extern void rtc_time_start(void);
+
+extern void rtc_time_stop(void);
+
+extern void rtc_time_write(RtcDateTime_t *DateTime);
+
+extern void rtc_time_read(RtcDateTime_t *DateTime);
+
+extern void rtc_alarm_start(RTC_Alarm_t Alarm);
+
+extern void rtc_alarm_stop(RTC_Alarm_t Alarm);
+
+extern void rtc_alarm_mask(RTC_Alarm_t Alarm,GXRTC_AlarmMask_t *Mask);
+
+extern void rtc_alarm_write(RTC_Alarm_t Alarm,RtcDateTime_t *DateTime);
+
+extern void rtc_alarm_read(RTC_Alarm_t Alarm,RtcDateTime_t *DateTime);
+#ifdef __cplusplus
+}
+#endif
+
+#endif

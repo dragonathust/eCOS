@@ -1,0 +1,13 @@
+build:
+	./release for normal.
+	./dirty for debug.
+
+output:
+	build/shell.elf
+
+description:
+	./release:
+		Check prj/*/.release, and only make .release one to build/shell.elf
+	./dirty:
+		Don't check prj/*/.release, and make all to build/shell.elf
+
